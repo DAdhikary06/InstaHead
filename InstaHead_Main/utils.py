@@ -6,8 +6,12 @@ import string
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 from code.T5_SEO import SEOLogitsProcessor
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 
+nltk.download('stopwords')
+from nltk.corpus import stopwords 
+stop_words = set(stopwords.words('english'))
 
 def generate_headline(tokenizer, model, input_text):
     input_ids = tokenizer.encode(input_text, return_tensors="pt", max_length=512, truncation=True)
@@ -15,7 +19,7 @@ def generate_headline(tokenizer, model, input_text):
         output_ids = model.generate(input_ids, max_length=64, num_beams=4, early_stopping=True)
     return tokenizer.decode(output_ids[0], skip_special_tokens=True)
 
-def generate_seo_headline(tokenizer, model, input_text, keyword, boost=8.0):
+def generate_seo_headline(tokenizer, model, input_text, keyword, boost=8.0, top_k=50, temperature=0.6):
     input_ids = tokenizer.encode(input_text, return_tensors="pt", max_length=512, truncation=True)
     keyword_ids = tokenizer.encode(keyword, add_special_tokens=False)
     scores_map = {token_id: boost for token_id in keyword_ids}
@@ -25,8 +29,8 @@ def generate_seo_headline(tokenizer, model, input_text, keyword, boost=8.0):
             input_ids,
             max_length=64,
             do_sample=True,
-            top_k=50,
-            temperature=0.6,
+            top_k=top_k,
+            temperature=temperature,
             logits_processor=[seo_processor]
         )
     return tokenizer.decode(output_ids[0], skip_special_tokens=True)
@@ -66,17 +70,45 @@ def get_top_keywords(article, n=5):
     return [word_map[word] for word, count in most_common]
 
 
+
+def keyword_inclusion(title, keyword):
+    return keyword.lower() in title.lower() if keyword else False
+
+# def cosine_sim(text1, text2):
+#     vectorizer = TfidfVectorizer().fit([text1, text2])
+#     vecs = vectorizer.transform([text1, text2])
+#     return float((vecs[0] @ vecs[1].T).toarray()[0][0])
+
+from sentence_transformers import SentenceTransformer, util
+def cosine_sim(text1, text2):
+    model = SentenceTransformer('all-MiniLM-L6-v2')
+    embeddings1 = model.encode(text1, convert_to_tensor=True)
+    embeddings2 = model.encode(text2, convert_to_tensor=True)
+    cosine_score = util.pytorch_cos_sim(embeddings1, embeddings2)
+    return cosine_score.item() if cosine_score is not None else 0.0
+
+def stopword_prop(text):
+    words = text.split()
+    if not words:
+        return 0
+    stopword_count = sum(1 for w in words if w.lower() in stop_words)
+    return int((stopword_count / len(words)) * 100)
+
+
+
+
+
 def show_title_details(title, time_taken, article, keyword, label="Title Details"):
     @st.dialog(label)
     def _show():
-        # keyword_present = keyword_inclusion(title, keyword)
-        # cosine_similarity = cosine_sim(article, title)
-        # stopword_proportion = stopword_prop(title)
+        keyword_present = keyword_inclusion(title, keyword)
+        cosine_similarity = cosine_sim(article, title)
+        stopword_proportion = stopword_prop(title)
 
         # use Default values for demonstration
-        keyword_present = True
-        cosine_similarity = 0.85
-        stopword_proportion = 20
+        # keyword_present = True
+        # cosine_similarity = 0.85
+        # stopword_proportion = 20
 
         st.subheader("🔍 Text Analysis Results")
         col1, col2, col3 = st.columns(3)

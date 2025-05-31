@@ -10,7 +10,7 @@ t5_seo_tokenizer, t5_seo_model = load_t5_seo()
 bart_tokenizer, bart_model = load_bart()
 
 st.title("📰 Headline Generator")
-category = st.selectbox("Select News Category", ["Sports", "Politics", "Technology", "Business", "Entertainment", "Science"])
+category = st.selectbox("Select News Category", ["Sports", "Politics", "World","Technology", "Science", "Entertainment", "Automobile"])
 article = st.text_area("Paste the news article here", key='article')
 
 # Toggle for SEO-based headline
@@ -41,9 +41,28 @@ if use_seo and article.strip():
 
     # Always show the SEO keyword input when SEO is enabled
     keyword = st.text_input("Enter your SEO keyword (optional)", value=st.session_state.get('keyword', ''), key='keyword')
+
+    
+    on = st.toggle(
+        "Show Advanced Options",
+        key="advanced_options",
+        help="Adjust sampling parameters for more control over headline generation."
+    )
+
+    if on:
+       col1, col2 = st.columns(2)
+       with col1:
+           top_k = st.slider("Top-K Sampling", min_value=10, max_value=100, value=50, step=1, help="Controls diversity. Higher = more diverse.")
+       with col2:
+           temperature = st.slider("Temperature", min_value=0.1, max_value=0.9, value=0.6, step=0.05, help="Controls randomness. Lower = more deterministic.")
+    else:
+        top_k = 50
+        temperature = 0.6
+    
 else:
     # If SEO is not enabled, clear the keyword from session state
-    st.session_state['keyword'] = ''
+    # To clear the keyword from session state safely:
+    st.session_state.pop('keyword', None)
     keyword = ''
 
 
@@ -65,7 +84,7 @@ if st.button("Generate Headlines"):
             if use_seo and keyword.strip():
                 start_t5_seo = time.time()
                 st.session_state['t5_seo_headline'] = generate_seo_headline(
-                    t5_seo_tokenizer, t5_seo_model, t5_input, keyword
+                    t5_seo_tokenizer, t5_seo_model, t5_input, keyword , top_k=top_k, temperature=temperature
                 )
                 end_t5_seo = time.time()
             else:

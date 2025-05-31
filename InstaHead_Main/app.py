@@ -11,7 +11,7 @@ st.set_page_config(
 st.logo('logo.png',size='large')
 
 Headline_page = st.Page("pages/1_Headline_Generator.py", title="Headline Generation",icon="📰")
-Analytics_page = st.Page("pages/2_Analytics_Page.py", title="Analytics", icon="📊")
+Analytics_page = st.Page("pages/2_Analytics_Page.py", title="Model Analytics", icon="📊")
 
 
 pg = st.navigation([Headline_page,Analytics_page])
