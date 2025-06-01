@@ -5,8 +5,12 @@ import numpy as np
 
 st.title('📊 Model Analytics')
 
-T5_df = pd.read_csv('output/T5_training_loss_summary.csv')
-BERT_df = pd.read_csv('output/BERT_training_loss_summary.csv')
+# Read loss summary data
+T5_loss_df = pd.read_csv('output/T5_training_loss_summary.csv')
+BART_loss_df = pd.read_csv('output/BART_training_loss_summary.csv')
+
+# Read ROUGE scores data
+T5_rouge_df = pd.read_csv('output/T5_rouge_score.csv')
 
 # Show loss summary
 def show_loss_summary(df, model_name):
@@ -29,36 +33,48 @@ def show_loss_summary(df, model_name):
 tab1, tab2 = st.tabs(["📉 Loss Summary", "🎯 Score Summary"])
 
 with tab1:
-    show_loss_summary(T5_df, "T5")
+    show_loss_summary(T5_loss_df, "T5")
     st.divider()
-    show_loss_summary(BERT_df, "BERT")
+    show_loss_summary(BART_loss_df, "BART")
 
 with tab2:
-    st.subheader("✨ Average ROUGE Score Comparison")
+    st.subheader("🤗 Average ROUGE & BLEU Score")
+    col1, col2 = st.columns(2)
 
-    # Manually define the scores (replace with your actual values)
-    rouge_data = {
-        "Model": ["T5", "BERT"],
-        "ROUGE-1": [0.7882, 0.4506],
-        "ROUGE-2": [0.6848, 0.3555],
-        "ROUGE-L": [0.7672, 0.4218]
-    }
-    rouge_df = pd.DataFrame(rouge_data)
 
-    # Show as a table
-    st.dataframe(rouge_df, use_container_width=True, hide_index=True)
+    with col1:
 
-    metrics = ["ROUGE-1", "ROUGE-2", "ROUGE-L"]
-    x = np.arange(len(metrics))
-    width = 0.35
+        # Show as a table
+        st.dataframe(T5_rouge_df, use_container_width=True, hide_index=True)
 
-    fig, ax = plt.subplots(figsize=(8, 5))
-    ax.bar(x - width/2, rouge_df.loc[0, metrics], width, label=rouge_df.loc[0, "Model"])
-    ax.bar(x + width/2, rouge_df.loc[1, metrics], width, label=rouge_df.loc[1, "Model"])
+        metrics = ["ROUGE-1", "ROUGE-2", "ROUGE-L"]
+        x = np.arange(len(metrics))
+        width = 0.35
 
-    ax.set_xticks(x)
-    ax.set_xticklabels(metrics)
-    ax.set_ylabel("F-measure")
-    ax.set_title("Average ROUGE Score Comparison")
-    ax.legend(loc='upper right')
-    st.pyplot(fig)
+        fig, ax = plt.subplots()
+        ax.bar(x - width/2, T5_rouge_df.loc[0, metrics], width, label=T5_rouge_df.loc[0, "Model"])
+        ax.bar(x + width/2, T5_rouge_df.loc[1, metrics], width, label=T5_rouge_df.loc[1, "Model"])
+
+        ax.set_xticks(x)
+        ax.set_xticklabels(metrics)
+        ax.set_ylabel("F-measure")
+        ax.set_title("Average ROUGE Score Comparison")
+        ax.legend(loc='upper right', fontsize='small')
+        st.pyplot(fig)
+
+    with col2:
+
+    # Bleu Score Comparison
+        bleu_data = {
+        "Model": ["T5", "BART"],
+        "BLEU": [0.52, 0.47]  # Example values
+        }
+        bleu_df = pd.DataFrame(bleu_data)
+
+        st.dataframe(bleu_df, use_container_width=True, hide_index=True)
+        fig, ax = plt.subplots()
+        ax.bar(bleu_df["Model"], bleu_df["BLEU"], color=["#1f77b4", "#ff7f0e"])
+        ax.set_ylabel("BLEU Score")
+        ax.set_title("Average BLEU Score Comparison")
+
+        st.pyplot(fig)

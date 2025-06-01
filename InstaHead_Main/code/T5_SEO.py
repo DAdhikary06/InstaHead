@@ -1,15 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# ## Model Load
-
-# In[ ]:
-
-
-# model_path = "/content/drive/MyDrive/T5_e10a5"
-
-
-# In[ ]:
 
 
 model_path = "model/T5_SEO_Model"  # Path to the T5 SEO model
@@ -26,10 +14,6 @@ from transformers import T5ForConditionalGeneration, T5Tokenizer
 tokenizer = T5Tokenizer.from_pretrained(model_path)
 model = T5ForConditionalGeneration.from_pretrained(model_path)
 
-
-# ## Load Data
-
-# In[ ]:
 
 
 import pandas as pd

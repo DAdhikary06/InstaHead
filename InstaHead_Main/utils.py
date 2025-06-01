@@ -80,14 +80,26 @@ def keyword_inclusion(title, keyword):
 #     return float((vecs[0] @ vecs[1].T).toarray()[0][0])
 
 from sentence_transformers import SentenceTransformer, util
+# Load the model ONCE at the top
+sbert_model = SentenceTransformer('all-MiniLM-L6-v2')
+
 def cosine_sim(text1, text2):
-    model = SentenceTransformer('all-MiniLM-L6-v2')
-    embeddings1 = model.encode(text1, convert_to_tensor=True)
-    embeddings2 = model.encode(text2, convert_to_tensor=True)
+    embeddings1 = sbert_model.encode(text1, convert_to_tensor=True)
+    embeddings2 = sbert_model.encode(text2, convert_to_tensor=True)
     cosine_score = util.pytorch_cos_sim(embeddings1, embeddings2)
     return cosine_score.item() if cosine_score is not None else 0.0
 
 def stopword_prop(text):
+    ''''
+    Note: 
+    text = "This is a simple example of how stopword proportion works."
+    Suppose stop_words = {"this", "is", "a", "of", "how"}
+    stopword_count = 5, total words = 9
+    stopword_prop(text) returns int((5/9)*100) = 55
+
+    Higher values mean the text contains more common words; lower values mean it is more content-rich.
+
+    '''
     words = text.split()
     if not words:
         return 0
