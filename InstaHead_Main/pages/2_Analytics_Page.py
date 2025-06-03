@@ -67,7 +67,7 @@ with tab2:
     # Bleu Score Comparison
         bleu_data = {
         "Model": ["T5", "BART"],
-        "BLEU": [0.52, 0.47]  # Example values
+        "BLEU": [0.66, 0.35]  # Example values
         }
         bleu_df = pd.DataFrame(bleu_data)
 

@@ -87,7 +87,7 @@ Desktop.ini
 .streamlit/
 
 # Data files
-*.csv
+
 *.tsv
 *.parquet
 *.h5

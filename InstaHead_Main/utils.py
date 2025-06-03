@@ -7,6 +7,7 @@ from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 from code.T5_SEO import SEOLogitsProcessor
 from sklearn.feature_extraction.text import TfidfVectorizer
+from textstat import flesch_reading_ease
 
 
 nltk.download('stopwords')
@@ -71,8 +72,17 @@ def get_top_keywords(article, n=5):
 
 
 
-def keyword_inclusion(title, keyword):
-    return keyword.lower() in title.lower() if keyword else False
+def readability_score(text):
+    """
+    Calculate the readability score of the given text using Flesch Reading Ease.
+    Returns a score between 0 and 100, where higher scores indicate easier readability.
+    """
+    try:
+        score = flesch_reading_ease(text)
+        return score
+    except Exception as e:
+        print(f"Error calculating readability score: {e}")
+        return 0  # Return 0 if an error occurs
 
 # def cosine_sim(text1, text2):
 #     vectorizer = TfidfVectorizer().fit([text1, text2])
@@ -107,28 +117,28 @@ def stopword_prop(text):
     return int((stopword_count / len(words)) * 100)
 
 
-
-
+@st.cache_data
+def compute_title_details(title, article, keyword):
+    """
+    Cache the computation of title details to ensure consistent results across page reloads or page switches.
+    """
+    readability = readability_score(title)  # Replace keyword_inclusion with readability_score
+    cosine_similarity = cosine_sim(article, title)
+    stopword_proportion = stopword_prop(title)
+    return readability, cosine_similarity, stopword_proportion
 
 def show_title_details(title, time_taken, article, keyword, label="Title Details"):
     @st.dialog(label)
     def _show():
-        keyword_present = keyword_inclusion(title, keyword)
-        cosine_similarity = cosine_sim(article, title)
-        stopword_proportion = stopword_prop(title)
-
-        # use Default values for demonstration
-        # keyword_present = True
-        # cosine_similarity = 0.85
-        # stopword_proportion = 20
+        # Use cached computation for title details
+        readability, cosine_similarity, stopword_proportion = compute_title_details(title, article, keyword)
 
         st.subheader("🔍 Text Analysis Results")
         col1, col2, col3 = st.columns(3)
 
         with col1:
-            st.metric(label="Keyword Included", value="Yes" if keyword_present else "No")
-            progress_value = 100 if keyword_present else 0
-            st.progress(progress_value)
+            st.metric(label="Readability Score", value=f"{readability:.2f}")  # Update label to Readability Score
+            st.progress(int(readability))  # Assuming readability is a percentage or normalized value
         with col2:
             st.metric(label="Cosine Similarity", value=f"{cosine_similarity:.2f}")
             st.progress(int(cosine_similarity * 100))
