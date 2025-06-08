@@ -1,6 +1,6 @@
 # InstaHead
 
-[![Build Status](https://github.com/DAdhikary06/InstaHead/actions/workflows/ci.yml/badge.svg)](https://github.com/DAdhikary06/InstaHead/actions/workflows/ci.yml)
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python Version](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/)
 [![Top Language](https://img.shields.io/github/languages/top/DAdhikary06/InstaHead)](https://github.com/DAdhikary06/InstaHead/)
